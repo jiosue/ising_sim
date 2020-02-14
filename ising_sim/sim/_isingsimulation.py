@@ -32,7 +32,7 @@ class IsingSimulation:
 
     """
 
-    def __init__(self, length, J=-1, initial_state=None):
+    def __init__(self, length, J=-1, local_fields=None, initial_state=None):
         """__init__.
 
         Parameters
@@ -43,6 +43,10 @@ class IsingSimulation:
             The coupling value of the Ising model. If ``J < 0``, then it is
             favorable for the spins to align; if ``J > 0``, then it is
             favorable for the spins to antialign.
+        local_fields : dict or iterable (optional, defaults to None).
+            The value of the local field at each spin. Ie spin ``i`` will have
+            a local field ``local_fields.get(i, 0)``. If
+            ``local_fields is None``, then the fields will be all zero.
         initial_state : dict or iterable (optional, defaults to None).
             The initial state of the chain. Ie spin ``i`` will be initialized
             to value ``initial_state[i]``, which should be in {1, -1}. If
@@ -58,16 +62,22 @@ class IsingSimulation:
                 raise ValueError("Spins must be either 1 or -1")
         self._initial_state = self._state.copy()
 
+        if local_fields is None:
+            local_fields = {}
+        elif isinstance(local_fields, dict):
+            local_fields = local_fields.copy()
+        else:
+            local_fields = dict(enumerate(local_fields))
+
         self._past_states = []
 
         z = {i: spin_var(i) for i in range(length)}
         z[-1] = 0
         z[length] = 0
         self._subgraphs = {
-            i: J * z[i] * (z[i-1] + z[i+1])
+            i: z[i] * (J * (z[i-1] + z[i+1]) + local_fields.get(i, 0))
             for i in range(length)
         }
-        # self._ham = sum(J * z[i] * z[i+1] for i in range(length))
 
     @property
     def state(self):
@@ -82,27 +92,6 @@ class IsingSimulation:
 
         """
         return self._state.copy()
-
-    def get_past_states(self, num_states=1000):
-        """get_past_states.
-
-        Return the previous ``num_states`` states of the system (if that many
-        exist; ``self`` only stores up the previous 1000 states).
-
-        Parameters
-        ----------
-        num_states : int (optional, defaults to 1000).
-            The number of previous update steps to include.
-
-        Returns
-        -------
-        states : list of dicts.
-            Each dict maps spin labels to their values.
-
-        """
-        return [
-            s.copy() for s in self._past_states[-num_states+1:]
-        ] + [self.state]
 
     @property
     def length(self):
@@ -132,6 +121,27 @@ class IsingSimulation:
         """
         return self._J
 
+    def get_past_states(self, num_states=1000):
+        """get_past_states.
+
+        Return the previous ``num_states`` states of the system (if that many
+        exist; ``self`` only stores up the previous 1000 states).
+
+        Parameters
+        ----------
+        num_states : int (optional, defaults to 1000).
+            The number of previous update steps to include.
+
+        Returns
+        -------
+        states : list of dicts.
+            Each dict maps spin labels to their values.
+
+        """
+        return [
+            s.copy() for s in self._past_states[-num_states+1:]
+        ] + [self.state]
+
     def _add_past_state(self, state):
         """_add_past_state.
 
@@ -159,8 +169,7 @@ class IsingSimulation:
     def update(self, T, num_updates=1):
         """update.
 
-        Update the simulation at temperature ``T``. Updates the internal state,
-        and returns a set of the spins that were flipped.
+        Update the simulation at temperature ``T``. Updates the internal state.
 
         Parameters
         ----------
@@ -169,23 +178,12 @@ class IsingSimulation:
         num_updates : int >= 1 (optional, defaults to 1).
             The number of times to update.
 
-        Returns
-        -------
-        flipped : set.
-            A set of the spins that were flipped.
-
         """
-        flipped = set()
         if num_updates < 0:
             raise ValueError("Cannot update a negative number of times")
         elif num_updates > 1:
             for _ in range(num_updates):
-                f = self.update(T)
-                for spin in f:
-                    if spin in flipped:
-                        flipped.remove(spin)
-                    else:
-                        flipped.add(spin)
+                self.update(T)
         elif num_updates == 1:
             self._add_past_state(self.state)
             for _ in range(self._length):
@@ -195,12 +193,9 @@ class IsingSimulation:
                 E_flip = self._subgraphs[i].value(self._state)
 
                 dE = E_flip - E
-                if dE < 0 or (T and random.random() < exp(-dE / T)):
-                    flipped.add(i)
-                else:  # flip the spin back
+                if not (dE < 0 or (T and random.random() < exp(-dE / T))):
+                    # flip the spin back to where it was
                     self._state[i] *= -1
-
-        return flipped
 
     def schedule_update(self, schedule):
         """schedule_update.
@@ -213,15 +208,9 @@ class IsingSimulation:
             Each element in ``schedule`` is a pair ``(T, n)`` which designates
             a temperature and a number of updates. See `Notes` below.
 
-        Returns
-        -------
-        flipped : set.
-            A set of the spins that were flipped after updating.
-
         Notes
         -----
-        The following two code blocks perform exactly the same thing (except
-        that the final ``flipped`` will be different).
+        The following two code blocks perform exactly the same thing.
 
         >>> sim = IsingSimulation(10)
         >>> for T in (3, 2):
@@ -233,16 +222,8 @@ class IsingSimulation:
         >>> sim.schedule_update(schedule)
 
         """
-        flipped = set()
         for T, n in schedule:
-            f = self.update(T, n)
-            for spin in f:
-                if spin in flipped:
-                    flipped.remove(spin)
-                else:
-                    flipped.add(spin)
-
-        return flipped
+            self.update(T, n)
 
 
 if __name__ == "__main__":

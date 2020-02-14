@@ -6,7 +6,6 @@ installing by source.
 """
 
 import setuptools
-from ising_sim import __version__, __name__
 
 
 with open('README.rst') as f:
@@ -15,10 +14,14 @@ with open('README.rst') as f:
 with open("requirements.txt") as f:
     REQUIREMENTS = [line.strip() for line in f if line.strip()]
 
+# read the __version__ variable from ising_sim/_version.py
+with open("ising_sim/_version.py") as f:
+    exec(f.read())
+
 
 setuptools.setup(
-    name=__name__,
-    version=__version__,
+    name="ising_sim",
+    version=__version__,  # noqa
     author="Joseph T. Iosue",
     author_email="joe.iosue@yahoo.com",
     description="A package for simulating a 1D spin chain with or without GUI",
