@@ -92,7 +92,7 @@ class GUI(tk.Tk):
         self._corr.clear()
         self._corr.plot(range(self._length), correlation)
         self._corr.set_xlabel("distance")
-        self._corr.set_ylabel("correlation to spin 0")
+        self._corr.set_ylabel("avg correlation to spin 0")
         self._corr.set_xlim([-1, self._length])
         self._corr.set_ylim([-1.1, 1.1])
         self._plot.draw()
