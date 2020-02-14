@@ -23,7 +23,7 @@ Either run it as a module as above, or run it as a script as below.
 
 See the docstring or the notebooks for information on additional arguments.
 
-.. image:: gui_example.png
+.. image:: example_gui.png
 
 
 To run it without graphics
