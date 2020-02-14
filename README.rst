@@ -9,6 +9,9 @@ Run simulations of the 1D Ising spin chain with and without a GUI. Try it out! R
     python -m ising_sim 100
 
 
+.. image:: example_gui.png
+
+
 To run it with graphics
 -----------------------
 
@@ -22,8 +25,6 @@ Either run it as a module as above, or run it as a script as below.
 
 
 See the docstring or the notebooks for information on additional arguments.
-
-.. image:: example_gui.png
 
 
 To run it without graphics
