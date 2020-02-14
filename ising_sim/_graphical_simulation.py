@@ -97,7 +97,7 @@ class _Run:
         self._root.after(50, self._update)
 
 
-def start_graphical_simulation(length, J=-1, num_past_states=50, coarse=10):
+def start_graphical_simulation(length, J=-1, num_past_states=100, coarse=10):
     """start_graphical_simulation.
 
     Make the GUI and start running the simulation.
@@ -109,7 +109,7 @@ def start_graphical_simulation(length, J=-1, num_past_states=50, coarse=10):
     J : float (optional, defaults to -1).
         The coupling constant for the spin chain. ``J < 0`` is a ferromagnetic
         chain; ``J > 0`` is an antiferromagnetic chain.
-    num_past_states : int (optional, defaults to 50).
+    num_past_states : int (optional, defaults to 100).
         The number of recent states to use to calculate the average correlation
         function.
     coarse : int (optional, defaults to 10).
