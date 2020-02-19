@@ -1,3 +1,2 @@
 matplotlib
 numpy
-qubovert==1.0.0

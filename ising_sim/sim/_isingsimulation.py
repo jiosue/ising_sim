@@ -4,7 +4,6 @@ This file contains the main class for simulating the 1D Ising chain.
 
 """
 
-from qubovert import spin_var
 from numpy import exp
 import random
 
@@ -60,24 +59,17 @@ class IsingSimulation:
             self._state = {i: initial_state[i] for i in range(length)}
             if set(self._state.values()) != {1, -1}:
                 raise ValueError("Spins must be either 1 or -1")
+        self._state[-1], self._state[length] = 0, 0
         self._initial_state = self._state.copy()
 
         if local_fields is None:
-            local_fields = {}
+            self._local_fields = dict(enumerate([0]*length))
         elif isinstance(local_fields, dict):
-            local_fields = local_fields.copy()
+            self._local_fields = local_fields.copy()
         else:
-            local_fields = dict(enumerate(local_fields))
+            self._local_fields = dict(enumerate(local_fields))
 
         self._past_states = []
-
-        z = {i: spin_var(i) for i in range(length)}
-        z[-1] = 0
-        z[length] = 0
-        self._subgraphs = {
-            i: z[i] * (J * (z[i-1] + z[i+1]) + local_fields.get(i, 0))
-            for i in range(length)
-        }
 
     @property
     def state(self):
@@ -91,7 +83,10 @@ class IsingSimulation:
             Dictionary that maps spin locations to their values.
 
         """
-        return self._state.copy()
+        s = self._state.copy()
+        s.pop(-1)
+        s.pop(self._length)
+        return s
 
     @property
     def length(self):
@@ -188,13 +183,15 @@ class IsingSimulation:
             self._add_past_state(self.state)
             for _ in range(self._length):
                 i = random.randint(0, self._length-1)
-                E = self._subgraphs[i].value(self._state)
-                self._state[i] *= -1  # flip the spin
-                E_flip = self._subgraphs[i].value(self._state)
 
-                dE = E_flip - E
-                if not (dE < 0 or (T and random.random() < exp(-dE / T))):
-                    # flip the spin back to where it was
+                # change in energy if we were to flip spin i
+                dE = -2 * self._state[i] * (
+                    self._J * (self._state[i-1] + self._state[i+1]) + 
+                    self._local_fields[i]
+                )
+
+                if dE < 0 or (T and random.random() < exp(-dE / T)):
+                    # flip the spin
                     self._state[i] *= -1
 
     def schedule_update(self, schedule):
