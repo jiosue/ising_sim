@@ -12,5 +12,4 @@ from . import gui
 from ._correlations import *
 from ._graphical_simulation import *
 
-__version__ = '0.0.0'
 name = "ising_sim"
