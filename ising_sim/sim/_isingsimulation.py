@@ -190,7 +190,7 @@ class IsingSimulation:
                     self._local_fields[i]
                 )
 
-                if dE < 0 or (T and random.random() < exp(-dE / T)):
+                if dE <= 0 or (T and random.random() < exp(-dE / T)):
                     # flip the spin
                     self._state[i] *= -1
 
