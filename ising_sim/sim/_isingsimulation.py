@@ -4,7 +4,7 @@ This file contains the main class for simulating the 1D Ising chain.
 
 """
 
-from numpy import exp
+from math import exp
 import random
 
 
