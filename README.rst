@@ -69,4 +69,4 @@ See also
 ========
 
 - The really cool web app that motivated me to make this one! https://github.com/explorablesforsfi/ising
-- I added simulation of arbitrary spin and boolean systems as well as simulated annealing with this simulation to `qubovert <https://github.com/jiosue/qubovert/>`_.
+- I added simulation of arbitrary spin and boolean systems as well as simulated annealing with this simulation to `qubovert <https://github.com/jtiosue/qubovert/>`_.
